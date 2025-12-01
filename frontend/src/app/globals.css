@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #121212;
+  --foreground: #E0E0E0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Segoe UI", "SF Pro Display", sans-serif;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #121212; 
+}
+::-webkit-scrollbar-thumb {
+  background: #555555; 
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #777777; 
+}
