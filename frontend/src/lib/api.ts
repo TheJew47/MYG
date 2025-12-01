@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Use the environment variable, falling back to localhost:8000 for local development/docker-compose.
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // 1. Standard JSON API
