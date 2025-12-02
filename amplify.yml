@@ -9,8 +9,11 @@ applications:
         build:
           commands:
             - npm run build
+            # Copy static assets to standalone folder so everything is in one place
+            - cp -r .next/static .next/standalone/miyog/frontend/.next/static
+            - cp -r public .next/standalone/miyog/frontend/public
       artifacts:
-        baseDirectory: .next
+        baseDirectory: .next/standalone/miyog/frontend
         files:
           - '**/*'
       cache:
