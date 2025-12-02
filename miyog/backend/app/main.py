@@ -223,3 +223,8 @@ def create_task(request: TaskCreateRequest, db: Session = Depends(get_db), user_
     generate_video_task.delay(task_payload)
     
     return {"status": "queued", "task_id": new_task.id}
+
+# --- AWS LAMBDA HANDLER ---
+# This allows the FastAPI app to be run as a Lambda function via Mangum adapter.
+from mangum import Mangum
+handler = Mangum(app)
