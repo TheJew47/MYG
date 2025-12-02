@@ -9,12 +9,14 @@ applications:
         build:
           commands:
             - npm run build
-            # Ensure the target directory exists before copying
+            # Ensure the target directory exists
             - mkdir -p .next/standalone/miyog/frontend/.next
             - mkdir -p .next/standalone/miyog/frontend/public
-            # Copy static assets to the standalone build folder
+            # Copy static assets
             - cp -r .next/static .next/standalone/miyog/frontend/.next/static
             - cp -r public .next/standalone/miyog/frontend/public
+            # CRITICAL FIX: Copy the server config file required by Amplify
+            - cp .next/required-server-files.json .next/standalone/miyog/frontend/.next/required-server-files.json
       artifacts:
         baseDirectory: .next/standalone/miyog/frontend
         files:
