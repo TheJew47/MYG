@@ -8,7 +8,7 @@ applications:
             - npm ci
         build:
           commands:
-            - npm audit fix
+            - npm run build
       artifacts:
         baseDirectory: .next
         files:
