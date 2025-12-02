@@ -12,7 +12,7 @@ export default function Dashboard() {
   
   // State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 1. DEFINE the fetch function (This fixes your ReferenceError)
@@ -86,4 +86,5 @@ export default function Dashboard() {
       />
     </div>
   );
+
 }
