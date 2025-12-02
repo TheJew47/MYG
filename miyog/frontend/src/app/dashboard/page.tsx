@@ -13,7 +13,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { getToken, isLoaded, userId } = useAuth(); // 3. Get Auth state
   
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
