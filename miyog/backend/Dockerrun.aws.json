@@ -1,0 +1,57 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "REPLACED_BY_GITHUB_ACTIONS",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "8000"
+    }
+  ],
+  "Volumes": [
+    {
+      "HostDirectory": "/var/log/miyog-worker",
+      "ContainerDirectory": "/code/logs"
+    }
+  ],
+  "Logging": "/var/log/miyog-worker",
+  "ContainerDefinitions": [
+    {
+      "Name": "worker",
+      "Image": "REPLACED_BY_GITHUB_ACTIONS",
+      "Essential": true,
+      "Memory": 3000,
+      "Command": ["/code/start.sh"],
+      "Environment": [
+        {
+          "Name": "PROCESS_TYPE",
+          "Value": "worker"
+        },
+        {
+          "Name": "PORT",
+          "Value": "8000"
+        }
+        // NOTE: All other ENV vars are set via the Beanstalk console
+      ],
+      "MountPoints": [
+        {
+          "SourceVolume": "awseb-logs-worker",
+          "ContainerPath": "/var/log/aws-sqsd"
+        }
+      ]
+    }
+  ],
+  "option_settings": [
+    {
+      "namespace": "aws:elasticbeanstalk:hostmanager",
+      "option_name": "LogPublicationControl",
+      "value": "true"
+    },
+    {
+      "namespace": "aws:elasticbeanstalk:environment",
+      "option_name": "ServiceRole",
+      "value": "arn:aws:iam::963604113727:role/aws-elasticbeanstalk-service-role"
+    }
+  ]
+}
