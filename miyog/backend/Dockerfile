@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# 1. System Dependencies (Same as before, required for Video/Audio)
+# 1. System Dependencies
 RUN apt-get update && apt-get install -y \
     imagemagick ffmpeg libsm6 libxext6 fonts-liberation findutils \
     espeak-ng libsndfile1 libpq-dev build-essential && rm -rf /var/lib/apt/lists/*
@@ -17,10 +17,12 @@ RUN sed -i '/torch/d' /code/requirements.txt
 RUN pip install --no-cache-dir scipy numpy spacy
 RUN pip install --no-cache-dir -r /code/requirements.txt
 
-# 3. Copy Code
+# 3. Copy Code & Script
 COPY . /code
 
-# 4. Start Command (Standard Web Server)
-# Beanstalk looks for exposure on Port 8000 by default for Python
+# 4. Make script executable
+RUN chmod +x /code/start.sh
+
+# 5. Start Command (Uses the script to decide what to run)
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/code/start.sh"]
