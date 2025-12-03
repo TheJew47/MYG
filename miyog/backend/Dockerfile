@@ -26,3 +26,5 @@ RUN chmod +x /code/start.sh
 # 5. Start Command (Uses the script to decide what to run)
 EXPOSE 8000
 CMD ["/code/start.sh"]
+
+#TRIGGER
