@@ -23,3 +23,5 @@ RUN pip install --no-cache-dir -r /code/requirements.txt
 COPY . /code
 # We use port 8080 because that is what the Adapter expects
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+# Trigger build
