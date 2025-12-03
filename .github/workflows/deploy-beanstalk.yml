@@ -49,3 +49,18 @@ jobs:
         aws elasticbeanstalk update-environment \
         --environment-name ${{ env.EB_ENVIRONMENT_NAME }} \
         --version-label "ver-${{ github.sha }}"
+# ... previous steps (Checkout, Zip, Configure AWS, Upload S3) ...
+
+    # 1. Deploy API
+    - name: Update API Environment
+      run: |
+        aws elasticbeanstalk update-environment \
+        --environment-name Miyog-prod \
+        --version-label "ver-${{ github.sha }}"
+
+    # 2. Deploy Worker
+    - name: Update Worker Environment
+      run: |
+        aws elasticbeanstalk update-environment \
+        --environment-name MiyogWorker-env \
+        --version-label "ver-${{ github.sha }}"
