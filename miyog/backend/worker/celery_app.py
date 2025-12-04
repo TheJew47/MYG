@@ -22,4 +22,5 @@ celery_app.conf.update(
     # Best practices for memory-heavy workers (FFmpeg, Whisper)
     worker_max_tasks_per_child=1, # CRITICAL: Forces worker cleanup after each task
     task_acks_late=True, # Acknowledge task only after job fully completes
+
 )
