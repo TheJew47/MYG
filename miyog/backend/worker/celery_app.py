@@ -4,9 +4,10 @@ from app.config import DATABASE_URL # <--- NEW: Import DATABASE_URL from config
 
 celery_app = Celery(
     "worker",
-    broker=settings.CELERY_BROKER_URL, # Uses the "sqs://" value from config
-    backend=DATABASE_URL, # <--- CRITICAL CHANGE: Uses PostgreSQL for result storage
-    include=['worker.tasks'] 
+    broker=settings.CELERY_BROKER_URL,
+    # Use the variable from settings, which grabs the correct 'db+postgresql://' string from Beanstalk
+    backend=settings.CELERY_RESULT_BACKEND, 
+    include=['worker.tasks']
 )
 
 celery_app.conf.update(
@@ -24,3 +25,4 @@ celery_app.conf.update(
     task_acks_late=True, # Acknowledge task only after job fully completes
 
 )
+
