@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    build: .  # Changed from ./miyog/backend
+    image: your-account-id.dkr.ecr.your-region.amazonaws.com/miyog-backend:latest
     container_name: miyog-backend
     command: /code/start.sh
     ports:
