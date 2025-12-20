@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    build: ./miyog/backend
+    build: .  # Changed from ./miyog/backend
     container_name: miyog-backend
     command: /code/start.sh
     ports:
@@ -10,7 +10,7 @@ services:
     environment:
       - PROCESS_TYPE=web
     env_file:
-      - ./miyog/backend/.env
+      - .env  # Changed from ./miyog/backend/.env
     depends_on:
       - db
       - redis
@@ -18,13 +18,13 @@ services:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
   worker:
-    build: ./miyog/backend
+    build: .  # Changed from ./miyog/backend
     container_name: miyog-worker
     command: /code/start.sh
     environment:
       - PROCESS_TYPE=worker
     env_file:
-      - ./miyog/backend/.env
+      - .env  # Changed from ./miyog/backend/.env
     depends_on:
       - db
       - redis
