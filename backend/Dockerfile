@@ -23,8 +23,6 @@ COPY . /code
 # 4. Make script executable
 RUN chmod +x /code/start.sh
 
-# 5. Start Command (Uses the script to decide what to run)
+# 5. Start Command
 EXPOSE 8000
 CMD ["/code/start.sh"]
-
-#TRIGGER
