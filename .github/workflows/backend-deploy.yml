@@ -1,0 +1,42 @@
+name: Backend CI/CD
+
+on:
+  push:
+    paths:
+      - 'backend/**' # Only trigger if files in the backend folder change
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Amazon ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin your-account-id.dkr.ecr.your-region.amazonaws.com
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t miyog-backend ./backend/miyog/backend
+          docker tag miyog-backend:latest your-account-id.dkr.ecr.your-region.amazonaws.com/miyog-backend:latest
+          docker push your-account-id.dkr.ecr.your-region.amazonaws.com/miyog-backend:latest
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/myg/backend
+            docker-compose pull
+            docker-compose up -d --build
