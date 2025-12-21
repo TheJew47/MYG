@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: .
@@ -19,7 +17,6 @@ services:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
   worker:
-    build: .
     image: miyog-backend:latest
     container_name: miyog-worker
     command: /code/start.sh
@@ -28,8 +25,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      backend:
+        condition: service_started
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
     volumes:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
