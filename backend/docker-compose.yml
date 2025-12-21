@@ -1,8 +1,8 @@
+# ~/myg/backend/docker-compose.yml
 version: '3.8'
 
 services:
   backend:
-    # Updated with your actual Account ID and Region
     image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     container_name: miyog-backend
     command: /code/start.sh
@@ -19,7 +19,6 @@ services:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
   worker:
-    # Changed from 'build: .' to use the ECR image
     image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     container_name: miyog-worker
     command: /code/start.sh
