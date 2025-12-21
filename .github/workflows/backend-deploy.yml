@@ -26,7 +26,8 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t miyog-backend ./backend/miyog/backend
+          # FIXED: Changed path from ./backend/miyog/backend to ./backend
+          docker build -t miyog-backend ./backend 
           docker tag miyog-backend:latest 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
           docker push 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
 
@@ -38,5 +39,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/myg/backend
+            # Log in to ECR on the EC2 instance so it can pull the image
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 963604113727.dkr.ecr.us-east-1.amazonaws.com
             docker-compose pull
             docker-compose up -d --build
