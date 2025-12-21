@@ -42,6 +42,6 @@ jobs:
             # Log in to ECR on the EC2 instance
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 963604113727.dkr.ecr.us-east-1.amazonaws.com
             
-            # Using 'docker compose' as you requested
-            docker compose pull
-            docker compose up -d --build
+            # UPDATED: Using 'docker-compose' with hyphen
+            docker-compose pull
+            docker-compose up -d
