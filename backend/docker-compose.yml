@@ -1,9 +1,9 @@
-# ~/myg/backend/docker-compose.yml
 version: '3.8'
 
 services:
+  # 1. FastAPI Web Server
   backend:
-    image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
+    build: ./backend
     container_name: miyog-backend
     command: /code/start.sh
     ports:
@@ -11,27 +11,40 @@ services:
     environment:
       - PROCESS_TYPE=web
     env_file:
-      - .env
+      - ./backend/.env
     depends_on:
       - db
       - redis
     volumes:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
+  # 2. Celery Worker (for video processing)
   worker:
-    image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
+    build: ./backend
     container_name: miyog-worker
     command: /code/start.sh
     environment:
       - PROCESS_TYPE=worker
     env_file:
-      - .env
+      - ./backend/.env
     depends_on:
       - db
       - redis
     volumes:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
+  # 3. Next.js Frontend
+  frontend:
+    build: ./frontend
+    container_name: miyog-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  # 4. PostgreSQL Database
   db:
     image: postgres:13
     container_name: miyog-db
@@ -42,6 +55,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # 5. Redis (Message Broker)
   redis:
     image: redis:7
     container_name: miyog-redis
