@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # 7. Start Command (Dev Mode)
-CMD ["npm", "run", "dev"]   
+CMD ["npm", "run", "dev"]
