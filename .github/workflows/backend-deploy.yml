@@ -32,7 +32,7 @@ jobs:
           docker push 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
 
       - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v0.1.10 
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
@@ -41,6 +41,7 @@ jobs:
             cd ~/myg/backend
             # Log in to ECR on the EC2 instance
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 963604113727.dkr.ecr.us-east-1.amazonaws.com
-            # Corrected to use 'docker compose' (no hyphen)
+            
+            # Using 'docker compose' as you requested
             docker compose pull
             docker compose up -d --build
