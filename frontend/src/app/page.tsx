@@ -62,6 +62,7 @@ export default function Dashboard() {
           {projects.map((p: any) => (
             <ProjectCard 
               key={p.id}
+              id={p.id}
               title={p.title}
               description={p.description}
               color={p.color_code}
@@ -88,3 +89,4 @@ export default function Dashboard() {
   );
 
 }
+
