@@ -34,10 +34,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Miyog Engine")
 
-# CORS configuration for development and production
+# FIXED: Specify exact origins because allow_credentials is True. 
+# Added your Vercel URL as requested.
+origins = [
+    "http://localhost:3000",
+    "https://myg-three.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
