@@ -10,7 +10,9 @@ import {
 import EngineSetupModal from "@/components/modals/EngineSetupModal";
 
 // Constants for backend communication
-const API_BASE_URL = "http://localhost:8000/api"; // Update this to your EC2 IP when deploying
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/backend-api/api' 
+  : "http://localhost:8000/api";
 
 interface Message {
   id: string;
@@ -274,4 +276,5 @@ export default function CreatePage() {
       />
     </>
   );
+
 }
