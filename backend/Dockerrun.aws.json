@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "public.ecr.aws/docker/library/python:3.10-slim",
+    "Name": "public.ecr.aws/docker/library/python:3.10-slim", 
     "Update": "true"
   },
   "Ports": [
