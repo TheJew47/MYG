@@ -26,3 +26,4 @@ celery_app.conf.update(
 
 )
 
+
