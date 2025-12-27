@@ -8,6 +8,7 @@ import shutil
 import os
 import uuid
 import traceback 
+import logging
 
 from app.models import Base, Project, Task, User
 from app.auth import get_current_user_id
@@ -20,6 +21,9 @@ from app.engine import s3_utils
 from app.engine.huggingface import generate_flux_image, generate_ltx_video
 from app.config import DATABASE_URL, settings 
 
+# Setup Logging
+logger = logging.getLogger(__name__)
+
 # Setup DB 
 engine = create_engine(
     DATABASE_URL, 
@@ -29,13 +33,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine) 
 
 app = FastAPI(title="Miyog Engine")
-
-origins = [
-    "http://localhost:3000",        
-    "http://127.0.0.1:3000",        
-    "http://3.216.174.254:8000",   
-    "*"                             
-]
 
 app.add_middleware(
     CORSMiddleware,
@@ -81,6 +78,10 @@ class ImageGenRequest(BaseModel):
 
 class VideoGenRequest(BaseModel):
     prompt: str
+
+class PresignedUrlRequest(BaseModel):
+    filename: str
+    file_type: str
 
 # --- ENDPOINTS ---
 
@@ -131,6 +132,34 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), user_id:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"id": project.id, "title": project.title, "tasks": project.tasks}
 
+@app.post("/api/upload/presigned")
+async def get_presigned_url(request: PresignedUrlRequest):
+    """
+    Generates a temporary S3 URL so the frontend can upload directly,
+    bypassing Vercel's 4.5MB limit.
+    """
+    try:
+        file_ext = request.filename.split(".")[-1] if "." in request.filename else "tmp"
+        s3_key = f"uploads/{uuid.uuid4()}.{file_ext}"
+        
+        # Generate the URL (Valid for 1 hour)
+        presigned_data = s3_utils.generate_presigned_post(
+            s3_key, 
+            request.file_type
+        )
+        
+        if not presigned_data:
+            raise HTTPException(status_code=500, detail="Failed to generate presigned URL")
+            
+        return {
+            "url": presigned_data['url'],
+            "fields": presigned_data['fields'],
+            "path": s3_key
+        }
+    except Exception as e:
+        logger.error(f"Presigned URL Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     if not settings.S3_BUCKET_NAME:
@@ -157,7 +186,6 @@ def generate_script(request: GenerateScriptRequest):
 @app.post("/api/ai/generate_voice")
 async def generate_voice(request: GenerateVoiceRequest):
     try:
-        # FIXED: voice_engine.generate_voice handles the S3 upload internally and returns the key
         s3_key = voice_engine.generate_voice(request.text, request.audio_prompt_url)
         return {"url": s3_utils.generate_signed_url(s3_key)}
     except Exception as e:
@@ -205,7 +233,6 @@ async def stream_temp_file(filename: str):
 
 @app.get("/api/tasks/{task_id}")
 def get_task(task_id: int, db: Session = Depends(get_db)):
-    # MODIFIED: Removed user_id check to bypass 403s
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -231,16 +258,13 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/tasks/generate")
 def create_task(request: TaskCreateRequest, db: Session = Depends(get_db)):
-    """
-    MODIFIED: Project and Auth checks removed for direct execution.
-    """
     new_task = Task(
         title=request.title or "New AI Video",
         description=request.description,
         script=request.scripts,
         status="Processing",
         resolution=request.resolution,
-        project_id=request.project_id, # Can now be None
+        project_id=request.project_id,
         progress=0,
         generate_script=request.generate_script,
         generate_audio=request.generate_audio,
@@ -258,6 +282,3 @@ def create_task(request: TaskCreateRequest, db: Session = Depends(get_db)):
     generate_video_task.delay(task_payload)
     
     return {"status": "queued", "task_id": new_task.id}
-
-from mangum import Mangum
-handler = Mangum(app)
