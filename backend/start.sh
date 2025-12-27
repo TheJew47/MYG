@@ -2,7 +2,7 @@
 
 if [ "$PROCESS_TYPE" = "worker" ]; then
     echo "Starting Celery Worker..."
-    # Points to the celery_app inside the worker directory 
+    # Points to the celery_app inside the worker directory
     celery -A worker.celery_app worker --loglevel=info
 else
     echo "Starting FastAPI Web Server..."
