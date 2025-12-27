@@ -8,17 +8,15 @@ import axios from 'axios';
  * Important: When working with an AWS EC2 backend, ensure NEXT_PUBLIC_API_URL 
  * is set to your EC2 public IP in your .env.local file.
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? '/backend-api' 
+  : 'http://localhost:8000';
 
-/**
- * Standard API instance for JSON requests
- */
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-});
 
 /**
  * API instance specifically for file uploads (Multipart/form-data)
@@ -90,5 +88,6 @@ export const endpoints = {
   getTask: (id: string | number) => `/api/tasks/${id}`,
   streamTempFile: (filename: string) => `/api/video/temp/${filename}`,
 };
+
 
 export default api;
