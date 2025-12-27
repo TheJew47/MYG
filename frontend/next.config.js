@@ -3,12 +3,13 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        // Frontend path you will call in your code
-        source: '/api/v1/:path*', 
-        // The actual HTTP destination on EC2
-        destination: 'http://3.216.174.254:8000/:path*', 
+        // This makes the browser think the request is to your own secure domain
+        source: '/backend-api/:path*',
+        // This is where Vercel securely forwards the request to your EC2
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
       },
     ]
   },
 }
+
 module.exports = nextConfig
