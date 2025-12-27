@@ -34,6 +34,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Miyog Engine")
 
+# CORS configuration for development and production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -142,7 +143,7 @@ async def get_presigned_url(request: PresignedUrlRequest):
         file_ext = request.filename.split(".")[-1] if "." in request.filename else "tmp"
         s3_key = f"uploads/{uuid.uuid4()}.{file_ext}"
         
-        # Generate the URL (Valid for 1 hour)
+        # Generate the POST handshake
         presigned_data = s3_utils.generate_presigned_post(
             s3_key, 
             request.file_type
