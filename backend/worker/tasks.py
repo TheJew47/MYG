@@ -103,4 +103,5 @@ def generate_video_task(self, payload: dict):
             db.commit()
         raise e
     finally:
+
         db.close()
