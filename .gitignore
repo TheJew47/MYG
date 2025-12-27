@@ -1,0 +1,22 @@
+# Dependency directories
+node_modules/
+frontend/node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Deployment artifacts
+frontend/dist/
+backend/dist/
