@@ -1,0 +1,28 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "public.ecr.aws/docker/library/python:3.10-slim",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "8000"
+    }
+  ],
+  "Logging": "/var/log/miyog-worker",
+  "ContainerDefinitions": [
+    {
+      "Name": "worker",
+      "Image": "public.ecr.aws/docker/library/python:3.10-slim",
+      "Essential": true,
+      "Memory": 3000,
+      "Command": ["/code/start.sh"],
+      "Environment": [
+        {
+          "Name": "PROCESS_TYPE",
+          "Value": "worker"
+        }
+      ]
+    }
+  ]
+}
