@@ -46,12 +46,13 @@ uploadApi.interceptors.request.use(authInterceptor);
 export const endpoints = {
   getProjects: '/projects',
   createProject: '/projects',
-  // Added getProjectDetails to fix the build error in [id]/page.tsx
   getProjectDetails: (id: string) => `/projects/${id}`,
   updateProject: (id: string) => `/projects/${id}`,
   deleteProject: (id: string) => `/projects/${id}`,
   uploadFile: '/upload', 
   createTask: '/tasks',
+  // ADDED: Missing endpoint for AI script generation
+  generateScript: '/ai/generate-script',
   tasks: {
     get: (id: string) => `/tasks/${id}`,
     generate: '/tasks/generate',
