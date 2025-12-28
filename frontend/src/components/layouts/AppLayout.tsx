@@ -1,38 +1,31 @@
-"use client"; 
+// frontend/src/components/layouts/AppLayout.tsx
+"use client";
 
-import { usePathname } from "next/navigation";
-import Sidebar from "./Sidebar";
-import TopBar from "./TopBar";
+import { ReactNode } from 'react';
+import Sidebar from './Sidebar';
+import TopBar from './TopBar';
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  
-  // Logic to identify the Pro NLE Editor page
-  // Path format: /projects/[id]/create
-  const isEditorPage = pathname.includes("/projects/") && pathname.includes("/create");
+interface AppLayoutProps {
+  children: ReactNode;
+}
 
-  // If we are in the editor, we bypass the TopBar and Sidebar entirely
-  if (isEditorPage) {
-    return (
-      <main className="h-screen w-screen overflow-hidden bg-app-bg">
-        {children}
-      </main>
-    );
-  }
-
-  // Standard layout for Dashboard, Projects, Analytics, etc.
+export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <>
-      <TopBar />
+    // 1. Outer container: Full viewport height, no window scroll
+    <div className="flex h-screen w-full bg-neutral-900 text-white overflow-hidden">
+      
+      {/* 2. Sidebar: Will sit naturally on the left */}
       <Sidebar />
-      {/* pl-[64px] aligns with the Sidebar collapsed width (64px).
-          pt-14 aligns with the TopBar height (h-14 / 56px).
-          This ensures the main page content starts exactly where the fixed bars end.
-      */}
-      <main className="pl-[64px] pt-14 h-screen overflow-hidden bg-app-bg">
-        {children}
-      </main>
-    </>
-  );
 
+      {/* 3. Right Side: Flex column (TopBar + Main Content) */}
+      <div className="flex flex-col flex-1 w-full min-w-0">
+        <TopBar />
+        
+        {/* 4. Main Content Area: Takes remaining height, scrolls internally */}
+        <main className="flex-1 overflow-y-auto p-6 relative">
+           {children}
+        </main>
+      </div>
+    </div>
+  );
 }
