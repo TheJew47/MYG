@@ -29,7 +29,7 @@ export default function Sidebar() {
     { icon: SparklesIcon, label: "Create AI", href: "/create" }, 
     { icon: ChartBarIcon, label: "Analytics", href: "/analytics" },
     { icon: CalendarIcon, label: "Content Calendar", href: "/schedule" },
-    { icon: GlobeAltIcon, label: "Discover", href: "/discover" }, // Discover added to main navigation
+    { icon: GlobeAltIcon, label: "Discover", href: "/discover" },
   ];
 
   return (
@@ -39,7 +39,7 @@ export default function Sidebar() {
       variants={sidebarVariants}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="h-screen bg-app-bg border-r border-app-border flex flex-col py-6 z-[60] fixed left-0 top-0 transition-all duration-300 ease-in-out shadow-premium"
+      className="h-screen bg-app-bg border-r border-app-border flex flex-col py-6 z-[60] transition-all duration-300 ease-in-out shadow-premium"
     >
       {/* Branding: Logo only, visible only when expanded and scaled correctly */}
       <div className="flex items-center justify-center px-4 mb-10 overflow-hidden min-h-[48px]">
