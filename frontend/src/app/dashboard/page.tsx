@@ -1,16 +1,13 @@
-// myg/frontend/src/app/dashboard/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs"; 
-import { api, endpoints, setAuthToken } from "@/lib/api"; 
+import { api, endpoints, supabase } from "@/lib/api"; 
 import { VideoCameraIcon, CpuChipIcon, BanknotesIcon, ClockIcon, PlusIcon } from "@heroicons/react/24/outline";
 import ProjectCard from "@/components/ui/ProjectCard";
 import NewProject from "@/components/modals/NewProject";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { getToken, isLoaded, userId } = useAuth(); 
   
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,17 +19,18 @@ export default function DashboardPage() {
     try {
       const res = await api.get(endpoints.getProjects);
       setProjects(res.data);
-    } catch (err) { console.error("[Dashboard] Fetch Error:", err); } 
-    finally { setLoading(false); }
+    } catch (err) { 
+      console.error("[Dashboard] Fetch Error:", err); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleDelete = async (id: number) => {
-    console.log("[Dashboard] Initializing delete for project ID:", id);
     if (!confirm("Are you sure you want to delete this project?")) return;
     
     try {
         await api.delete(endpoints.deleteProject(id.toString()));
-        console.log("[Dashboard] Delete successful");
         fetchProjects();
     } catch (err) { 
         console.error("[Dashboard] Delete Error:", err);
@@ -41,23 +39,22 @@ export default function DashboardPage() {
   };
 
   const handleEdit = (project: any) => {
-    console.log("[Dashboard] Editing project:", project.id);
     setEditingProject(project);
     setIsModalOpen(true);
   };
 
   useEffect(() => {
     const initAuth = async () => {
-      if (isLoaded && userId) {
-        try {
-          const token = await getToken();
-          setAuthToken(token); 
-          fetchProjects();     
-        } catch (e) { console.error("Auth error", e); setLoading(false); }
-      } else if (isLoaded) { setLoading(false); }
+      // Check Supabase session instead of Clerk
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        fetchProjects();
+      } else {
+        router.push('/login');
+      }
     };
     initAuth();
-  }, [isLoaded, userId, getToken]);
+  }, [router]);
 
   return (
     <div className="p-8 space-y-10 max-w-[1600px] mx-auto">
@@ -95,7 +92,7 @@ export default function DashboardPage() {
               {projects.map((p: any) => (
                 <ProjectCard 
                   key={p.id} id={p.id} title={p.title} description={p.description} color={p.color_code} emoji={p.emoji || "📁"}
-                  onClick={() => { console.log("[Dashboard] Navigating to project:", p.id); router.push(`/projects/${p.id}`); }}
+                  onClick={() => { router.push(`/projects/${p.id}`); }}
                   onEdit={() => handleEdit(p)}
                   onDelete={() => handleDelete(p.id)}
                 />
