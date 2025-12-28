@@ -17,7 +17,7 @@ RUN sed -i '/torch/d' /code/requirements.txt
 RUN pip install --no-cache-dir scipy numpy spacy
 RUN pip install --no-cache-dir -r /code/requirements.txt
 
-# 3. Copy Code & Script
+# 3. Copy Code & Script (Fixed syntax)
 COPY . /code
 
 # 4. Make script executable
