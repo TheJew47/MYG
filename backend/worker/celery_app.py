@@ -1,4 +1,4 @@
-from celery import Celery
+from celery import Celery 
 from app.config import settings
 from app.config import DATABASE_URL # <--- NEW: Import DATABASE_URL from config
 
@@ -25,5 +25,6 @@ celery_app.conf.update(
     task_acks_late=True, # Acknowledge task only after job fully completes
 
 )
+
 
 
