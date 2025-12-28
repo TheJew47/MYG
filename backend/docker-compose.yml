@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     build: .
-    image: miyog-backend:latest
+    image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     container_name: miyog-backend
     command: /code/start.sh
     ports:
@@ -20,7 +20,7 @@ services:
 
   worker:
     build: .
-    image: miyog-backend:latest
+    image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     container_name: miyog-worker
     command: /code/start.sh
     environment:
@@ -48,4 +48,4 @@ services:
     container_name: miyog-redis
 
 volumes:
-  postgres_data:
+  postgres_data:ww
