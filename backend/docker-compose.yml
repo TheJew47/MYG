@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   backend:
-    build: .
     image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     container_name: miyog-backend
     command: /code/start.sh
@@ -19,7 +18,6 @@ services:
       - /tmp/loom_runtime:/tmp/loom_runtime
 
   worker:
-    build: .
     image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     container_name: miyog-worker
     command: /code/start.sh
@@ -48,4 +46,4 @@ services:
     container_name: miyog-redis
 
 volumes:
-  postgres_data:ww
+  postgres_data: {}
