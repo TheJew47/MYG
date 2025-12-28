@@ -17,7 +17,6 @@ export default function AuthenticatedLayout({
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // If not logged in, boot them back to the landing page
         router.push("/");
       } else {
         setIsLoading(false);
@@ -35,16 +34,21 @@ export default function AuthenticatedLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0B0E14]">
-      {/* Sidebar is back, but only for logged-in pages! */}
+    <div className="flex h-screen w-full overflow-hidden bg-[#0B0E14]">
+      {/* 1. Sidebar: Fixed to the left */}
       <Sidebar />
       
-      <div className="flex flex-col flex-1 overflow-hidden relative">
-        {/* Top Bar is back here too */}
+      {/* 2. Right Side Container: Flex column to stack TopBar and Main content */}
+      <div className="flex flex-col flex-1 h-full min-w-0 overflow-hidden relative">
+        
+        {/* 3. TopBar: Stays at the top of the right container */}
         <TopBar />
         
-        <main className="flex-1 overflow-y-auto relative custom-scrollbar">
-          {children}
+        {/* 4. Main Content Area: Fills the remaining space and is scrollable */}
+        <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="max-w-[1600px] mx-auto w-full h-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
