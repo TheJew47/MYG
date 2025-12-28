@@ -35,16 +35,16 @@ export default function AuthenticatedLayout({
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-black text-white">
-      {/* Sidebar: Fixed to the left */}
+      {/* Sidebar: Now sits naturally in the flex row */}
       <Sidebar />
       
-      {/* Right Side Container: Flex column to stack TopBar and Main content */}
+      {/* Right Side Container: Flex column stacks TopBar and Main content */}
       <div className="flex flex-col flex-1 h-full min-w-0 overflow-hidden relative bg-[#0B0E14]">
         
-        {/* TopBar: Stays at the top */}
+        {/* TopBar: Now sits naturally at the top of this column */}
         <TopBar />
         
-        {/* Main Workspace Area: Stays within bounds and scrolls */}
+        {/* Main Workspace Area: Scrolls internally without being covered */}
         <main className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="w-full h-full">
             {children}
