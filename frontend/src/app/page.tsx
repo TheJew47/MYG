@@ -1,21 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs"; 
 import ProjectCard from "@/components/ui/ProjectCard";
 import NewProject from "@/components/modals/NewProject";
 import { useRouter } from "next/navigation";
-import { api, endpoints, setAuthToken } from "@/lib/api";
+import { api, endpoints, supabase } from "@/lib/api";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { getToken, isLoaded, userId } = useAuth();
   
   // State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. DEFINE the fetch function (This fixes your ReferenceError)
   const fetchProjects = async () => {
     try {
       const res = await api.get(endpoints.getProjects);
@@ -27,21 +24,20 @@ export default function Dashboard() {
     }
   };
 
-  // 2. CALL it inside useEffect (After Auth is ready)
   useEffect(() => {
     const initAuth = async () => {
-      if (isLoaded) {
-        if (userId) {
-          const token = await getToken();
-          setAuthToken(token); // Set token for API calls
-          fetchProjects();     // Call the function defined above
-        } else {
-          setLoading(false);
-        }
+      // Check Supabase session instead of Clerk
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        fetchProjects();
+      } else {
+        // If no session, stop loading (Middleware will handle redirect if needed)
+        setLoading(false);
       }
     };
     initAuth();
-  }, [isLoaded, userId, getToken]);
+  }, []);
 
   return (
     <div className="p-8 h-full flex flex-col">
@@ -87,6 +83,4 @@ export default function Dashboard() {
       />
     </div>
   );
-
 }
-
