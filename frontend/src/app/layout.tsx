@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import Sidebar from "@/components/layouts/Sidebar";
+import TopBar from "@/components/layouts/TopBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,14 +27,19 @@ export default function RootLayout({
           inter.className
         )}
       >
-        {/* We no longer need <ClerkProvider>. 
-            Authentication state is now managed at the server level 
-            via middleware and individual client components using 
-            the Supabase browser client.
-        */}
-        <main className="relative flex min-h-screen flex-col">
-          {children}
-        </main>
+        <div className="flex h-screen overflow-hidden">
+          {/* Sidebar will now show on every page */}
+          <Sidebar />
+          
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* TopBar will now show on every page */}
+            <TopBar />
+            
+            <main className="flex-1 overflow-y-auto relative bg-[#0B0E14]">
+              {children}
+            </main>
+          </div>
+        </div>
       </body>
     </html>
   );
