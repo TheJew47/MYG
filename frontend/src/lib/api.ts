@@ -8,15 +8,26 @@ export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Standard API instance
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Attach Supabase JWT to every single backend request
-api.interceptors.request.use(async (config) => {
+// Dedicated instance for file uploads
+export const uploadApi = axios.create({
+  baseURL,
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
+
+// Shared interceptor to attach Supabase JWT to every request
+const authInterceptor = async (config: any) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
@@ -26,23 +37,23 @@ api.interceptors.request.use(async (config) => {
     console.error("Auth Interceptor Error:", error);
   }
   return config;
-});
+};
 
-// Handle errors globally
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn("Session expired or invalid.");
-    }
-    return Promise.reject(error);
-  }
-);
+api.interceptors.request.use(authInterceptor);
+uploadApi.interceptors.request.use(authInterceptor);
 
-// Defined endpoints used by the dashboard
+// Centralized API endpoints
 export const endpoints = {
   getProjects: '/projects',
+  createProject: '/projects',
+  updateProject: (id: string) => `/projects/${id}`,
   deleteProject: (id: string) => `/projects/${id}`,
+  uploadFile: '/upload', // Match your backend upload route
+  createTask: '/tasks',
+  tasks: {
+    get: (id: string) => `/tasks/${id}`,
+    generate: '/tasks/generate',
+  }
 };
 
 export default api;
