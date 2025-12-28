@@ -40,9 +40,23 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID", "")
     AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "")
 
-settings = Settings()
+    @property
+        def SQLALCHEMY_DATABASE_URL(self) -> str:
+            # Construct the URL
+            url = f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            
+            # When using the Supabase Pooler (Port 6543), SSL is usually required.
+            if self.POSTGRES_PORT == "6543":
+                 return f"{url}?sslmode=require"
+            return url
+    
+        class Config:
+            env_file = ".env"
+    
+    settings = Settings()
 
 # Use the +psycopg2 driver for SQLAlchemy connection
 DATABASE_URL = (
     f"postgresql+psycopg2://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+
 )
