@@ -1,12 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   async rewrites() {
     return [
       {
-        // This makes the browser think the request is to your own secure domain
-        source: '/backend-api/:path*',
-        // This is where Vercel securely forwards the request to your EC2
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
+        source: '/api_backend/:path*',
+        destination: 'http://3.216.174.254:8000/:path*', // Your EC2 Address
       },
     ]
   },
