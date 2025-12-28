@@ -46,9 +46,11 @@ uploadApi.interceptors.request.use(authInterceptor);
 export const endpoints = {
   getProjects: '/projects',
   createProject: '/projects',
+  // Added getProjectDetails to fix the build error in [id]/page.tsx
+  getProjectDetails: (id: string) => `/projects/${id}`,
   updateProject: (id: string) => `/projects/${id}`,
   deleteProject: (id: string) => `/projects/${id}`,
-  uploadFile: '/upload', // Match your backend upload route
+  uploadFile: '/upload', 
   createTask: '/tasks',
   tasks: {
     get: (id: string) => `/tasks/${id}`,
