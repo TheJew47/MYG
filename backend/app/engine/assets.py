@@ -111,7 +111,7 @@ async def fetch_pixabay_image(query: str):
         except Exception as e:
             print(f"Pixabay Error for {query}: {e}")
     return None
-
+ 
 async def download_file(url: str, dest_path: str):
     if not url.startswith("http"):
         print(f"Invalid download URL: {url}")
