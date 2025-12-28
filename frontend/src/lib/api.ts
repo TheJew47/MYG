@@ -8,7 +8,8 @@ export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// CHANGED: Use HTTPS and point to your domain if you have one
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://3.216.174.254:8000';
 
 // Standard API instance
 export const api = axios.create({
@@ -51,7 +52,6 @@ export const endpoints = {
   deleteProject: (id: string) => `/projects/${id}`,
   uploadFile: '/upload', 
   createTask: '/tasks',
-  // ADDED: Missing endpoint for AI script generation
   generateScript: '/ai/generate-script',
   tasks: {
     get: (id: string) => `/tasks/${id}`,
