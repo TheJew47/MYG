@@ -1,86 +1,83 @@
 "use client";
-import { useState, useEffect } from "react";
-import ProjectCard from "@/components/ui/ProjectCard";
-import NewProject from "@/components/modals/NewProject";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, endpoints, supabase } from "@/lib/api";
+import { supabase } from "@/lib/api";
+import Link from "next/link";
 
-export default function Dashboard() {
+export default function LandingPage() {
   const router = useRouter();
-  
-  // State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProjects = async () => {
-    try {
-      const res = await api.get(endpoints.getProjects);
-      setProjects(res.data);
-    } catch (err) {
-      console.error("Failed to fetch projects:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      // Check Supabase session instead of Clerk
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        fetchProjects();
-      } else {
-        // If no session, stop loading (Middleware will handle redirect if needed)
-        setLoading(false);
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Redirect logged-in users to the protected dashboard
+          router.push("/dashboard");
+        } else {
+          setCheckingAuth(false);
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        setCheckingAuth(false);
       }
     };
-    initAuth();
-  }, []);
+    checkUser();
+  }, [router]);
+
+  // Prevent flash of landing page content while checking session
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 h-full flex flex-col">
-      <h1 className="text-4xl font-bold mb-8 font-sans text-[#E0E0E0]">Projects</h1>
-      
-      {loading ? (
-        <div className="text-gray-500 animate-pulse">Loading your studio...</div>
-      ) : projects.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-[#333] rounded-xl bg-[#1E1E1E]/50">
-          <h2 className="text-2xl font-bold text-white mb-2">No Projects Yet</h2>
-          <p className="text-gray-500 mb-6">Create your first project to start generating videos.</p>
-          <button onClick={() => setIsModalOpen(true)} className="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-gray-200">
-            Create Project
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {projects.map((p: any) => (
-            <ProjectCard 
-              key={p.id}
-              id={p.id}
-              title={p.title}
-              description={p.description}
-              color={p.color_code}
-              emoji={p.emoji || "📁"}
-              onClick={() => router.push(`/projects/${p.id}`)}
-            />
-          ))}
-        </div>
-      )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0B0E14] text-white p-6 selection:bg-text-accent/30">
+      {/* Background Glow Decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[25%] -left-[10%] w-[50%] h-[50%] bg-text-accent/10 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-[25%] -right-[10%] w-[50%] h-[50%] bg-purple-500/10 blur-[120px] rounded-full" />
+      </div>
 
-      {/* Floating Action Button */}
-      <button 
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-10 right-10 w-14 h-14 bg-white text-black rounded-full text-3xl font-bold flex items-center justify-center shadow-lg hover:scale-105 transition-transform z-50"
-      >
-        +
-      </button>
+      <div className="relative z-10 flex flex-col items-center text-center space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-7xl md:text-8xl font-black tracking-tighter italic uppercase leading-none">
+            Miyog
+          </h1>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-text-accent ml-2">
+            AI Video Engine
+          </p>
+        </div>
+        
+        <p className="text-text-muted text-sm md:text-base font-medium max-w-md leading-relaxed">
+          The ultimate digital creative pipeline. Generate, edit, and scale your content with human-like AI avatars.
+        </p>
 
-      <NewProject 
-        isOpen={isModalOpen} 
-        onClose={() => { setIsModalOpen(false); fetchProjects(); }} 
-      />
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-4">
+          <Link 
+            href="/login" 
+            className="bg-white text-black px-10 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all text-center shadow-glow"
+          >
+            Sign In
+          </Link>
+          <Link 
+            href="/signup" 
+            className="bg-[#161B26] border border-white/10 text-white px-10 py-4 rounded-xl font-bold hover:bg-white/5 transition-all text-center"
+          >
+            Create Account
+          </Link>
+        </div>
+
+        <div className="pt-12 flex items-center gap-8 opacity-20 grayscale">
+          <span className="text-[10px] font-black uppercase tracking-widest">Next.js 14</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Supabase</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">AWS EC2</span>
+        </div>
+      </div>
     </div>
   );
 }
