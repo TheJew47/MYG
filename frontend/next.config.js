@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
   async rewrites() {
     return [
       {
+        // 1. Matches the '/api_backend' seen in your browser console
         source: '/api_backend/:path*',
-        destination: 'http://3.216.174.254:8000/:path*', // Your EC2 Address
+        // 2. Automatically injects the '/api' prefix that main.py expects
+        destination: `http://3.216.174.254:8000/api/:path*`,
       },
     ]
   },
