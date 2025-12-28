@@ -1,8 +1,7 @@
-// frontend/src/utils/supabase/middleware.js
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
-export async function updateSession(request) {
+export async function middleware(request) {
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -28,14 +27,10 @@ export async function updateSession(request) {
     }
   )
 
-  // This will refresh the session if it's expired - critical for auth persistence
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Refresh session if expired
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Protect Dashboard Routes:
-  // If no user is found and they are trying to access /dashboard or /projects,
-  // redirect them to the login page.
+  // Redirect logic
   if (
     !user &&
     (request.nextUrl.pathname.startsWith('/dashboard') ||
@@ -46,7 +41,6 @@ export async function updateSession(request) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and tries to access /login, send them to /dashboard
   if (user && request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
@@ -54,4 +48,10 @@ export async function updateSession(request) {
   }
 
   return supabaseResponse
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }
