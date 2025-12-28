@@ -27,24 +27,26 @@ export default function AuthenticatedLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#0B0E14]">
-      {/* Sidebar: Fixed to left */}
+    <div className="flex h-screen w-full overflow-hidden bg-black text-white">
+      {/* Sidebar: Fixed to the left */}
       <Sidebar />
       
-      <div className="flex flex-col flex-1 h-full min-w-0 overflow-hidden relative">
-        {/* Top Bar: Fixed to top */}
+      {/* Right Side Container: Flex column to stack TopBar and Main content */}
+      <div className="flex flex-col flex-1 h-full min-w-0 overflow-hidden relative bg-[#0B0E14]">
+        
+        {/* TopBar: Stays at the top */}
         <TopBar />
         
-        {/* Main Workspace: Full width and scrollable */}
-        <main className="flex-1 overflow-y-auto p-10 lg:p-16 custom-scrollbar bg-[#0B0E14]">
-          <div className="w-full h-full animate-in fade-in duration-700">
+        {/* Main Workspace Area: Stays within bounds and scrolls */}
+        <main className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="w-full h-full">
             {children}
           </div>
         </main>
