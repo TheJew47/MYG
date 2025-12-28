@@ -1,62 +1,77 @@
 # backend/app/auth.py
+import requests
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError, ExpiredSignatureError
 from app.config import settings
 import logging
 
-# Initialize logger to see detailed messages in 'docker-compose logs'
 logger = logging.getLogger("uvicorn.error")
 security = HTTPBearer()
 
-def get_current_user_id(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
-    """
-    Verifies the Supabase JWT token and returns the user's UUID.
-    """
-    token = credentials.credentials
-    
-    if not settings.SUPABASE_JWT_SECRET:
-        logger.error("AUTH ERROR: SUPABASE_JWT_SECRET is not set in environment!")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Backend Error: SUPABASE_JWT_SECRET is not configured."
-        )
+# Cache for the Public Key to avoid fetching it on every request
+_public_key = None
+
+def get_supabase_public_key(token: str):
+    """Fetches the correct public key from Supabase's JWKS endpoint."""
+    global _public_key
+    if _public_key:
+        return _public_key
 
     try:
-        # DEBUG: Log the header to see what 'alg' is actually being sent
+        # Extract project reference from your DB Host (e.g., 'bvlhcjgyuetelksvryly')
+        project_ref = settings.DB_HOST.split('.')[1]
+        jwks_url = f"https://{project_ref}.supabase.co/auth/v1/jwks"
+        
+        response = requests.get(jwks_url)
+        jwks = response.json()
+        
+        # Get the 'kid' from the token header
         unverified_header = jwt.get_unverified_header(token)
-        logger.info(f"AUTH DEBUG: Received token with header: {unverified_header}")
+        kid = unverified_header.get("kid")
+        
+        # Find the matching key in the JWKS
+        for key in jwks.get("keys", []):
+            if key.get("kid") == kid:
+                _public_key = key
+                return _public_key
+                
+        raise Exception("Matching key not found in JWKS.")
+    except Exception as e:
+        logger.error(f"AUTH ERROR: Failed to fetch JWKS: {str(e)}")
+        return None
 
-        # ADDED 'ES256' to the allowed algorithms list
-        # Note: If this fails with 'Signature verification failed', it means 
-        # your SUPABASE_JWT_SECRET is not the correct key for an ES256 token.
+def get_current_user_id(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
+    token = credentials.credentials
+    
+    try:
+        header = jwt.get_unverified_header(token)
+        alg = header.get("alg")
+        
+        # If the token is ES256, we must use the Public Key from JWKS
+        if alg == "ES256":
+            key = get_supabase_public_key(token)
+            if not key:
+                raise HTTPException(status_code=500, detail="Could not verify token identity.")
+        else:
+            # Fallback to HS256 using the Secret String
+            key = settings.SUPABASE_JWT_SECRET
+
         payload = jwt.decode(
             token, 
-            settings.SUPABASE_JWT_SECRET, 
+            key, 
             algorithms=["HS256", "ES256"],
             options={"verify_aud": False}
         )
         
         user_id = payload.get("sub")
         if not user_id:
-            logger.error("AUTH ERROR: 'sub' (User UUID) missing from payload.")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Invalid Token: User ID not found."
-            )
+            raise HTTPException(status_code=401, detail="Invalid Token: sub missing.")
             
         return user_id
 
     except ExpiredSignatureError:
-        logger.warning("AUTH WARNING: Authentication failed - Token has expired.")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Session expired. Please log in again."
-        )
+        raise HTTPException(status_code=401, detail="Session expired.")
     except JWTError as e:
-        # If you see 'Signature verification failed', see the steps below
         logger.error(f"AUTH ERROR: JWT Verification failed: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail=f"Authentication failed: {str(e)}"
-        )
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
