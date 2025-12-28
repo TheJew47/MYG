@@ -7,8 +7,7 @@ export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// CHANGED: Use a relative path that matches the rewrite source in next.config.js
-// This makes the browser think the request is going to https://myg-three.vercel.app/api_backend
+// Point this exactly to the 'source' path in next.config.js
 const baseURL = '/api_backend';
 
 export const api = axios.create({
@@ -48,7 +47,8 @@ export const endpoints = {
   deleteProject: (id: string) => `/projects/${id}`,
   uploadFile: '/upload', 
   createTask: '/tasks',
-  generateScript: '/ai/generate-script',
+  // FIXED: Changed hyphen to underscore to match backend/app/main.py
+  generateScript: '/ai/generate_script', 
   tasks: {
     get: (id: string) => `/tasks/${id}`,
     generate: '/tasks/generate',
