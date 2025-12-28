@@ -2,6 +2,7 @@
 services:
   # The Backend API (EC2)
   api:
+    image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     build: .
     volumes:
       - .:/app
@@ -16,6 +17,7 @@ services:
 
   # Celery Worker for AI Video Rendering
   worker:
+    image: 963604113727.dkr.ecr.us-east-1.amazonaws.com/miyog-backend:latest
     build: .
     command: celery -A worker.tasks.celery_app worker --loglevel=info --concurrency=1
     volumes:
