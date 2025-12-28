@@ -1,4 +1,4 @@
-# myg/backend/worker/tasks.py
+# myg/backend/worker/tasks.py 
 
 import os
 import logging
@@ -105,3 +105,4 @@ def generate_video_task(self, payload: dict):
     finally:
 
         db.close()
+
