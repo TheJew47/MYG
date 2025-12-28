@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
 
     # --- Database (Matches your .env) ---
-    # We use these names to match exactly what is in your .env file
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_HOST: str
@@ -18,7 +17,7 @@ class Settings(BaseSettings):
 
     # --- Supabase Auth ---
     SUPABASE_JWT_SECRET: str
-    SUPABASE_ANON_KEY: Optional[str] = None
+    SUPABASE_ANON_KEY: str
     SUPABASE_URL: Optional[str] = None
 
     # --- Redis / Celery ---
@@ -45,13 +44,12 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URL(self) -> str:
         """
-        Constructs the connection string for SQLAlchemy.
-        Automatically adds SSL mode if using the Supabase Pooler (Port 6543).
+        Constructs the connection string.
+        Automatically adds SSL mode for Supabase Pooler (Port 6543).
         """
-        # Using postgresql+psycopg2 ensures the correct driver is used
         base_url = f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         
-        # SSL is mandatory for the Supabase Pooler
+        # Port 6543 (Pooler) requires SSL mode
         if str(self.POSTGRES_PORT) == "6543":
             return f"{base_url}?sslmode=require"
         return base_url
@@ -60,9 +58,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         case_sensitive = True
 
-# Initialize settings
 settings = Settings()
 
-# EXPORT module-level variables for the worker/tasks.py
-# This fixes the 'ImportError: cannot import name DATABASE_URL'
+# Fixed Import for Worker
 DATABASE_URL = settings.SQLALCHEMY_DATABASE_URL
