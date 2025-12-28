@@ -8,10 +8,8 @@ import NewProject from "@/components/modals/NewProject";
 
 export default function DashboardPage() {
   const router = useRouter();
-  
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
   
@@ -49,47 +47,52 @@ export default function DashboardPage() {
   }, [router]);
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-12 w-full animate-in fade-in duration-500">
       {/* Header Section */}
-      <div className="flex justify-between items-end border-b border-white/5 pb-8">
-        <div>
-            <h1 className="text-4xl font-black text-white tracking-tighter italic uppercase mb-2">Workspace</h1>
-            <p className="text-text-muted text-xs font-bold uppercase tracking-widest">Your creative pipeline overview</p>
+      <div className="flex justify-between items-end border-b border-white/5 pb-10">
+        <div className="space-y-1">
+            <h1 className="text-5xl font-black text-white tracking-tighter italic uppercase">Workspace</h1>
+            <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.4em]">Your Creative Pipeline</p>
         </div>
         <button 
             onClick={() => { setEditingProject(null); setIsModalOpen(true); }}
-            className="bg-white hover:bg-gray-200 text-black px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 transition-all shadow-glow"
+            className="bg-white hover:bg-gray-200 text-black px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-glow"
         >
-            <PlusIcon className="w-4 h-4 stroke-[3]" /> New Project
+            <PlusIcon className="w-5 h-5 stroke-[3]" /> New Project
         </button>
       </div>
 
       {/* Projects Grid Section */}
-      <div className="space-y-6">
-          <div className="flex items-center gap-3">
-              <h2 className="text-xs font-black text-white uppercase tracking-[0.3em]">Recent Library</h2>
-              <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-text-accent font-bold">{projects.length}</span>
+      <div className="space-y-8">
+          <div className="flex items-center gap-4">
+              <h2 className="text-xs font-black text-white uppercase tracking-[0.4em]">Recent Library</h2>
+              <div className="h-px flex-1 bg-white/5" />
+              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] text-text-accent font-bold tracking-tighter">
+                {projects.length} ITEMS
+              </span>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map(i => <div key={i} className="h-[200px] bg-white/5 border border-white/5 animate-pulse rounded-2xl" />)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-[240px] bg-white/[0.03] border border-white/5 animate-pulse rounded-2xl" />)}
             </div>
           ) : projects.length === 0 ? (
              <div 
-                className="flex flex-col items-center justify-center h-80 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl text-center cursor-pointer hover:bg-white/[0.04] transition-colors" 
+                className="flex flex-col items-center justify-center h-[400px] bg-white/[0.01] border-2 border-dashed border-white/5 rounded-[2rem] text-center cursor-pointer hover:bg-white/[0.03] transition-all group" 
                 onClick={() => { setIsModalOpen(true); }}
              >
-                <VideoCameraIcon className="w-12 h-12 text-white/20 mb-4" />
-                <h3 className="text-white font-bold uppercase tracking-widest text-sm">Your library is empty</h3>
-                <p className="text-text-muted text-[10px] mt-2 font-bold uppercase tracking-widest">Create your first project to start</p>
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <VideoCameraIcon className="w-10 h-10 text-white/20" />
+                </div>
+                <h3 className="text-white font-black uppercase tracking-widest text-lg">Empty Studio</h3>
+                <p className="text-text-muted text-[10px] mt-2 font-black uppercase tracking-[0.2em]">Launch your first production to begin</p>
              </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {projects.map((p: any) => (
                 <ProjectCard 
                   key={p.id} id={p.id} title={p.title} description={p.description} color={p.color_code} emoji={p.emoji || "📁"}
-                  onClick={() => { router.push(`/projects/${p.id}`); }}
+                  onClick={() => router.push(`/projects/${p.id}`)}
                   onEdit={() => { setEditingProject(p); setIsModalOpen(true); }}
                   onDelete={() => handleDelete(p.id)}
                 />
