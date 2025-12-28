@@ -49,3 +49,6 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 settings = Settings()
+
+# CRITICAL FIX: Add this line so worker/tasks.py can import it
+DATABASE_URL = settings.SQLALCHEMY_DATABASE_URL
