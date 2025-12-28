@@ -2,7 +2,7 @@
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError, ExpiredSignatureError
-from app.config import settings
+from app.config import settings 
 import logging
 
 # Initialize logger to see errors in 'docker-compose logs'
