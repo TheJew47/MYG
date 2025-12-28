@@ -1,14 +1,18 @@
+# backend/app/models.py
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, JSON
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import UUID
 
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(String, primary_key=True, index=True)
+    # Changed to UUID to match Supabase auth.users ID format
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    credits_balance = Column(Integer, default=100)
+    # Renamed from credits_balance to credits to match the SQL schema
+    credits = Column(Integer, default=10)
     projects = relationship("Project", back_populates="owner")
 
 class Project(Base):
@@ -16,28 +20,30 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     description = Column(String, nullable=True)
-    platform = Column(String)
-    color_code = Column(String)
-    emoji = Column(String)
+    platform = Column(String, default='YouTube')
+    color_code = Column(String, default='#000000')
+    emoji = Column(String, default='VP')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    owner_id = Column(String, ForeignKey("users.id"))
+    
+    # Must match the User.id type (UUID)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     owner = relationship("User", back_populates="projects")
     tasks = relationship("Task", back_populates="project")
 
 class Task(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
+    title = Column(String, index=True, default='New AI Video')
     description = Column(Text, nullable=True)
     script = Column(Text, nullable=True)
-    status = Column(String, default="Draft") 
+    status = Column(String, default="Processing") 
     resolution = Column(String, default="1080x1920")
     fps = Column(Integer, default=24)
     
     progress = Column(Integer, default=0)
     video_url = Column(String, nullable=True)
     
-    # --- AI GENERATION FLAGS ---
+    # AI Generation Flags
     generate_script = Column(Boolean, default=False)
     generate_audio = Column(Boolean, default=False)
     generate_images = Column(Boolean, default=True)
@@ -54,8 +60,7 @@ class Task(Base):
 
     timeline_data = Column(JSON, nullable=True)
 
-    # MODIFIED: project_id is now optional
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=True)
     project = relationship("Project", back_populates="tasks")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -1,26 +1,57 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+// frontend/src/utils/supabase/middleware.js
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
 
-// Define routes that require authentication
-const isProtectedRoute = createRouteMatcher([
-  '/', 
-  '/dashboard(.*)',
-  '/projects(.*)',
-  '/settings(.*)',
-  '/api/projects(.*)',
-  '/api/tasks(.*)',
-]);
+export async function updateSession(request) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
 
-// Make the callback async and use await auth.protect()
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // This will refresh the session if it's expired - critical for auth persistence
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Protect Dashboard Routes:
+  // If no user is found and they are trying to access /dashboard or /projects,
+  // redirect them to the login page.
+  if (
+    !user &&
+    (request.nextUrl.pathname.startsWith('/dashboard') ||
+      request.nextUrl.pathname.startsWith('/projects'))
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   }
-});
 
-export const config = {
-  matcher: [
-    // This matcher tells Next.js which paths to run the middleware on.
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
-  ],
-};
+  // If user is logged in and tries to access /login, send them to /dashboard
+  if (user && request.nextUrl.pathname.startsWith('/login')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  return supabaseResponse
+}
