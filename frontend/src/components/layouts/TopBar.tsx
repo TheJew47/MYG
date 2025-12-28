@@ -6,11 +6,10 @@ export default function TopBar() {
   const pathname = usePathname();
   
   // Logic: Show search only on the Home (Dashboard) and Projects main pages
-  // Based on your Sidebar links: Home is "/dashboard" and Projects is "/"
   const showSearch = pathname === "/dashboard" || pathname === "/";
 
   return (
-    <div className="h-14 bg-app-bg/80 backdrop-blur-xl border-b border-app-border flex items-center px-6 justify-between fixed top-0 left-0 right-0 z-[50] pl-20">
+    <div className="h-14 bg-app-bg/80 backdrop-blur-xl border-b border-app-border flex items-center px-6 justify-between w-full z-[50]">
       {/* Search Area - Conditional Visibility */}
       <div className="flex items-center gap-4 min-w-[256px]">
         {showSearch && (
