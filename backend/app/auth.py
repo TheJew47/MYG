@@ -1,5 +1,5 @@
 # backend/app/auth.py
-import requests
+import httpx
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError, ExpiredSignatureError
@@ -9,52 +9,59 @@ import logging
 logger = logging.getLogger("uvicorn.error")
 security = HTTPBearer()
 
-# Cache for the Public Key to avoid fetching it on every request
-_public_key = None
+# Cache for keys to avoid repeated network calls
+_jwks_cache = {}
 
-def get_supabase_public_key(token: str):
-    """Fetches the correct public key from Supabase's JWKS endpoint."""
-    global _public_key
-    if _public_key:
-        return _public_key
-
+async def get_supabase_keys(token: str):
+    """Fetches all active public keys from Supabase and finds the one matching the token."""
+    global _jwks_cache
+    
     try:
-        # Extract project reference from your DB Host (e.g., 'bvlhcjgyuetelksvryly')
+        header = jwt.get_unverified_header(token)
+        kid = header.get("kid")
+        
+        # If the key is already in cache, return it immediately
+        if kid in _jwks_cache:
+            return _jwks_cache[kid]
+
+        # Extract project ref from DB_HOST (e.g., 'bvlhcjgyuetelksvryly')
         project_ref = settings.DB_HOST.split('.')[1]
         jwks_url = f"https://{project_ref}.supabase.co/auth/v1/jwks"
         
-        response = requests.get(jwks_url)
-        jwks = response.json()
+        logger.info(f"AUTH: Fetching JWKS from {jwks_url}")
+        async with httpx.AsyncClient() as client:
+            response = await client.get(jwks_url)
+            jwks = response.json()
         
-        # Get the 'kid' from the token header
-        unverified_header = jwt.get_unverified_header(token)
-        kid = unverified_header.get("kid")
-        
-        # Find the matching key in the JWKS
+        # Store all keys in the cache
         for key in jwks.get("keys", []):
-            if key.get("kid") == kid:
-                _public_key = key
-                return _public_key
-                
-        raise Exception("Matching key not found in JWKS.")
+            _jwks_cache[key["kid"]] = key
+            
+        if kid not in _jwks_cache:
+            logger.error(f"AUTH ERROR: Key ID {kid} not found in Supabase JWKS.")
+            return None
+            
+        return _jwks_cache[kid]
     except Exception as e:
-        logger.error(f"AUTH ERROR: Failed to fetch JWKS: {str(e)}")
+        logger.error(f"AUTH ERROR: Failed to retrieve keys: {str(e)}")
         return None
 
-def get_current_user_id(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
+async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
     token = credentials.credentials
     
     try:
         header = jwt.get_unverified_header(token)
         alg = header.get("alg")
         
-        # If the token is ES256, we must use the Public Key from JWKS
+        # 1. Handle ECC (P-256 / ES256) keys - The 'Current' key in your screenshot
         if alg == "ES256":
-            key = get_supabase_public_key(token)
+            key = await get_supabase_keys(token)
             if not key:
-                raise HTTPException(status_code=500, detail="Could not verify token identity.")
+                raise HTTPException(status_code=401, detail="Could not verify token identity.")
+        
+        # 2. Handle Legacy HS256 keys - The 'Previous' key in your screenshot
         else:
-            # Fallback to HS256 using the Secret String
+            # For HS256, use the secret string from your .env file
             key = settings.SUPABASE_JWT_SECRET
 
         payload = jwt.decode(
@@ -66,7 +73,7 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Security(sec
         
         user_id = payload.get("sub")
         if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid Token: sub missing.")
+            raise HTTPException(status_code=401, detail="Invalid token: sub missing.")
             
         return user_id
 
