@@ -2,12 +2,13 @@
 import axios from 'axios';
 import { createBrowserClient } from '@supabase/ssr';
 
-const supabase = createBrowserClient(
+// Export supabase for use in client components
+export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
@@ -37,5 +38,11 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Defined endpoints used by the dashboard
+export const endpoints = {
+  getProjects: '/projects',
+  deleteProject: (id: string) => `/projects/${id}`,
+};
 
 export default api;
