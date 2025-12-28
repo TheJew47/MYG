@@ -1,62 +1,51 @@
 # backend/app/config.py
-import os
 from pydantic_settings import BaseSettings
+from typing import Optional
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Miyog Engine"
-    API_V1_STR: str = "/api"
+    # Database (Matches .env)
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: str
+    POSTGRES_DB: str
     
-    # --- SUPABASE DATABASE CONFIG ---
-    # These will be pulled from your .env file
-    DB_USER: str = os.getenv("POSTGRES_USER", "postgres")      
-    DB_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "")
-    DB_HOST: str = os.getenv("POSTGRES_HOST", "db.bvlhcjgyuetelksvryly.supabase.co")      
-    DB_PORT: str = os.getenv("POSTGRES_PORT", "5432")
-    DB_NAME: str = os.getenv("POSTGRES_DB", "postgres")
-    
-    # --- SUPABASE AUTH CONFIG ---
-    # The Legacy JWT Secret you revealed in the dashboard
-    SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
-    
-    # --- CELERY / BROKER ---
-    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
-    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
-    
-    # --- AI SPACES & TOKENS ---
-    HF_TOKEN: str = os.getenv("HF_TOKEN", "") 
-    
-    # Hugging Face Space IDs
-    SCRIPT_SPACE_ID: str = os.getenv("SCRIPT_SPACE_ID", "amoghkrishnan/script_gen")
-    VOICE_SPACE_ID: str = os.getenv("VOICE_SPACE_ID", "") 
-    VIDEO_SPACE_ID: str = os.getenv("VIDEO_SPACE_ID", "amoghkrishnan/TEXT-TO-VIDEO")
-    VIDEO_JSON_SPACE_ID: str = os.getenv("VIDEO_JSON_SPACE_ID", "amoghkrishnan/VIDEO-TIMESTAMPED-JSON")
-    
-    PIXABAY_API_KEY: str = os.getenv("PIXABAY_API_KEY", "")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    
-    # --- AWS S3 ---
-    AWS_REGION: str = os.getenv("AWS_REGION", "ap-southeast-2")
-    S3_BUCKET_NAME: str = os.getenv("S3_BUCKET_NAME", "miyog-video-assets") 
-    AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID", "")
-    AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+    # Supabase Auth
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_KEY: Optional[str] = None
+    SUPABASE_JWT_SECRET: str
+    SUPABASE_ANON_KEY: Optional[str] = None
+
+    # External APIs
+    GEMINI_API_KEY: str
+    PIXABAY_API_KEY: str
+    HF_TOKEN: str
+
+    # AWS S3
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str
+    S3_BUCKET_NAME: str
+
+    # Redis/Celery
+    CELERY_BROKER_URL: str = "redis://redis:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
 
     @property
-        def SQLALCHEMY_DATABASE_URL(self) -> str:
-            # Construct the URL
-            url = f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-            
-            # When using the Supabase Pooler (Port 6543), SSL is usually required.
-            if self.POSTGRES_PORT == "6543":
-                 return f"{url}?sslmode=require"
-            return url
-    
-        class Config:
-            env_file = ".env"
-    
-    settings = Settings()
+    def SQLALCHEMY_DATABASE_URL(self) -> str:
+        """
+        Constructs the connection string. 
+        Automatically adds SSL for Supabase Pooler (Port 6543).
+        """
+        base_url = f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        
+        # The Supabase Pooler on port 6543 requires SSL mode
+        if str(self.POSTGRES_PORT) == "6543":
+            return f"{base_url}?sslmode=require"
+        return base_url
 
-# Use the +psycopg2 driver for SQLAlchemy connection
-DATABASE_URL = (
-    f"postgresql+psycopg2://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
 
-)
+settings = Settings()
