@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
 
     # --- Database (Matches your .env) ---
+    # We use these names to match exactly what is in your .env file
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_HOST: str
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://redis:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
 
-    # --- AI Spaces & Tokens (Required for engine files) ---
+    # --- AI Spaces & Tokens ---
     HF_TOKEN: str
     SCRIPT_SPACE_ID: str = "amoghkrishnan/script_gen"
     VOICE_SPACE_ID: str = "amoghkrishnan/chatterbox-tts"
@@ -44,24 +45,24 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URL(self) -> str:
         """
-        Constructs the connection string. 
-        Automatically adds SSL for Supabase Pooler (Port 6543).
+        Constructs the connection string for SQLAlchemy.
+        Automatically adds SSL mode if using the Supabase Pooler (Port 6543).
         """
-        # Using +psycopg2 is safer for SQLAlchemy 2.x
+        # Using postgresql+psycopg2 ensures the correct driver is used
         base_url = f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         
-        # The Supabase Pooler on port 6543 requires SSL mode
+        # SSL is mandatory for the Supabase Pooler
         if str(self.POSTGRES_PORT) == "6543":
             return f"{base_url}?sslmode=require"
         return base_url
 
     class Config:
         env_file = ".env"
-        # This allows you to access variables as settings.VOICE_SPACE_ID 
-        # even if they are defined as voice_space_id in some places.
         case_sensitive = True
 
+# Initialize settings
 settings = Settings()
 
-# EXPORT THIS FOR THE WORKER: This fixes the 'ImportError' in your logs
+# EXPORT module-level variables for the worker/tasks.py
+# This fixes the 'ImportError: cannot import name DATABASE_URL'
 DATABASE_URL = settings.SQLALCHEMY_DATABASE_URL
