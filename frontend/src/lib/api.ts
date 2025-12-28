@@ -2,16 +2,15 @@
 import axios from 'axios';
 import { createBrowserClient } from '@supabase/ssr';
 
-// Export supabase for use in client components
 export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// CHANGED: Use HTTPS and point to your domain if you have one
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://3.216.174.254:8000';
+// CHANGED: Use a relative path that matches the rewrite source in next.config.js
+// This makes the browser think the request is going to https://myg-three.vercel.app/api_backend
+const baseURL = '/api_backend';
 
-// Standard API instance
 export const api = axios.create({
   baseURL,
   headers: {
@@ -19,7 +18,6 @@ export const api = axios.create({
   },
 });
 
-// Dedicated instance for file uploads
 export const uploadApi = axios.create({
   baseURL,
   headers: {
@@ -27,7 +25,6 @@ export const uploadApi = axios.create({
   },
 });
 
-// Shared interceptor to attach Supabase JWT to every request
 const authInterceptor = async (config: any) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -43,7 +40,6 @@ const authInterceptor = async (config: any) => {
 api.interceptors.request.use(authInterceptor);
 uploadApi.interceptors.request.use(authInterceptor);
 
-// Centralized API endpoints
 export const endpoints = {
   getProjects: '/projects',
   createProject: '/projects',
